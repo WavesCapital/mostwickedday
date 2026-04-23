@@ -1,65 +1,99 @@
-import Image from "next/image";
+import Link from "next/link";
+import { YEAR_RECAPS } from "@/data/history";
+import { allTimeLeaderboard, yearRecap, player } from "@/data/queries";
 
-export default function Home() {
+const CURRENT_YEAR = 2025;
+
+export default function HomePage() {
+  const top5 = allTimeLeaderboard().slice(0, 5);
+  const thisYear = yearRecap(CURRENT_YEAR);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="mx-auto max-w-5xl px-6 py-16">
+      <section className="text-center space-y-6">
+        <p
+          className="text-sunset-200 tracking-[0.3em] text-sm"
+          style={{ fontFamily: "var(--font-script)" }}
+        >
+          Lake Tobesofkee · Macon GA
+        </p>
+        <h1 className="text-sunset-gradient text-6xl md:text-8xl">
+          MOST&nbsp;WICKED&nbsp;DAY
+        </h1>
+        <p className="text-sand-200 text-lg max-w-2xl mx-auto">
+          The ultimate summer showdown. Five events, one trophy,
+          one champion who has to chug from it.
+        </p>
+        <div className="flex items-center justify-center gap-4 pt-4 flex-wrap">
+          <Link
+            href={`/${CURRENT_YEAR}`}
+            className="bg-sunset-gradient px-8 py-3 rounded-retro font-semibold text-night-950 hover:scale-105 transition inline-block"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Register for {CURRENT_YEAR}
+          </Link>
+          <Link
+            href="/all-time"
+            className="px-6 py-3 rounded-retro border border-sunset-400/40 text-sunset-200 hover:bg-sunset-400/10 transition inline-block"
           >
-            Documentation
-          </a>
+            All-Time Leaderboard
+          </Link>
         </div>
-      </main>
-    </div>
+      </section>
+
+      <section className="mt-20 grid gap-6 md:grid-cols-3">
+        {YEAR_RECAPS.slice().reverse().map((y) => {
+          const champ = player(y.championSlug);
+          return (
+            <Link
+              key={y.year}
+              href={`/${y.year}`}
+              className="block rounded-retro bg-night-900/60 border border-sunset-700/30 p-6 hover:border-sunset-400/60 transition"
+            >
+              <div className="text-sunset-400 text-sm uppercase tracking-widest">
+                {y.year === CURRENT_YEAR ? "Upcoming" : "Past Edition"}
+              </div>
+              <div className="text-4xl mt-3" style={{ fontFamily: "var(--font-display)" }}>
+                {y.year}
+              </div>
+              <div className="mt-4 text-sand-200">
+                <div className="text-xs uppercase text-sand-200/60">Champion</div>
+                <div className="font-semibold">{champ?.name ?? "TBD"}</div>
+                {y.championPoints > 0 && (
+                  <div className="text-sunset-400 mt-1">🏅 {y.championPoints} pts</div>
+                )}
+              </div>
+            </Link>
+          );
+        })}
+      </section>
+
+      <section className="mt-20">
+        <h2 className="text-3xl mb-6 text-sunset-200">All-Time Top 5</h2>
+        <ol className="space-y-2">
+          {top5.map((entry, i) => (
+            <li
+              key={entry.player.slug}
+              className="flex items-center gap-4 bg-night-900/60 border border-sunset-700/20 rounded-retro px-4 py-3"
+            >
+              <span className="text-sunset-400 font-bold w-8">#{i + 1}</span>
+              <Link
+                href={`/players/${entry.player.slug}`}
+                className="flex-1 hover:text-sunset-200 transition"
+              >
+                {entry.player.emoji} {entry.player.name}
+              </Link>
+              <span className="text-sunset-200">{entry.total} pts</span>
+              <span className="text-sand-200/60 text-sm hidden sm:inline">
+                {entry.years}y · {entry.medals}🏅
+              </span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <footer className="mt-24 pt-8 border-t border-sunset-700/20 text-center text-sand-200/50 text-sm">
+        Most Wicked Day · Year 4 coming in 2026
+      </footer>
+    </main>
   );
 }
