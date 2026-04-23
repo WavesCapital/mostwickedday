@@ -1,102 +1,191 @@
 import Link from "next/link";
-import { allTimeLeaderboard } from "@/data/queries";
+import Image from "next/image";
 import { YEAR_RECAPS } from "@/data/history";
+import { allTimeLeaderboard, player } from "@/data/queries";
+import { Footer } from "@/components/Footer";
+import { Trophy, Medal } from "lucide-react";
 
 export const metadata = {
   title: "All-Time Stats",
   description:
-    "Every edition of Most Wicked Day, every champion, every career point. Click a name to view the full player profile.",
+    "Every Most Wicked Day, every champion, every career point. Click a name to view the full player profile.",
 };
 
 export default function AllTimePage() {
   const board = allTimeLeaderboard();
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-16">
-      <header className="mb-12">
-        <Link
-          href="/"
-          className="text-sunset-400 hover:text-sunset-200 text-sm transition inline-block mb-6"
-        >
-          ← Home
-        </Link>
-        <h1 className="text-sunset-500 font-extrabold text-5xl md:text-7xl drop-shadow-[0_0_24px_rgba(255,140,70,0.3)]" style={{ fontFamily: "var(--font-display)" }}>ALL-TIME</h1>
-        <p className="text-sand-200 mt-4 max-w-2xl">
-          Every Most Wicked Day in one place. Career points, medals, and years
-          active across {board.length} competitors.
-        </p>
-      </header>
+    <main className="min-h-screen flex flex-col bg-[#0C1225] pt-16">
+      <section className="relative flex items-center justify-center w-full">
+        <div className="relative w-full h-auto md:min-h-[60vh] overflow-hidden">
+          <Image
+            src="/hero/sunset-palms.png"
+            alt="Background palms"
+            width={1536}
+            height={1024}
+            priority
+            className="w-full h-auto md:h-full md:absolute md:inset-0 object-contain md:object-cover object-center"
+          />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <h1
+              className="font-extrabold text-[16vw] md:text-[14vw] leading-none text-[#34F5FF] drop-shadow-[0_0_14px_rgba(52,245,255,0.35)] text-center"
+              style={{ fontFamily: "var(--font-inter)" }}
+            >
+              ALL-TIME
+            </h1>
+          </div>
+        </div>
+      </section>
 
-      <section className="mb-16">
-        <h2 className="text-sunset-200 text-2xl mb-4">Event History</h2>
-        <div className="grid gap-4 md:grid-cols-3">
-          {YEAR_RECAPS.slice()
-            .sort((a, b) => a.year - b.year)
-            .map((y) => (
-              <Link
-                key={y.year}
-                href={`/${y.year}`}
-                className="block rounded-retro bg-night-900/60 border border-sunset-700/30 p-5 hover:border-sunset-400/60 transition"
-              >
-                <div
-                  className="text-4xl"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  {y.year}
+      <div className="container mx-auto px-4 max-w-5xl mt-16 md:mt-24">
+        {/* Event history timeline */}
+        <section className="mb-20">
+          <h2 className="text-2xl md:text-3xl text-white mb-8">
+            Event History
+          </h2>
+          <div className="space-y-6">
+            {YEAR_RECAPS.slice()
+              .sort((a, b) => a.year - b.year)
+              .map((y) => {
+                const champ = player(y.championSlug);
+                return (
+                  <Link
+                    key={y.year}
+                    href={`/${y.year}`}
+                    className="block rounded-2xl bg-[#0E0F1D]/80 border border-cyan-400/30 p-6 hover:border-cyan-400/60 transition"
+                  >
+                    <div className="flex items-baseline gap-4 flex-wrap">
+                      <span
+                        className="text-4xl md:text-5xl text-cyan-300 font-extrabold"
+                        style={{ fontFamily: "var(--font-inter)" }}
+                      >
+                        {y.year}
+                      </span>
+                      <span className="text-white/60 text-sm uppercase tracking-widest">
+                        Champion: {champ?.name ?? "—"}
+                      </span>
+                    </div>
+                    <p className="mt-3 text-white/80 text-sm md:text-base">
+                      {y.recap}
+                    </p>
+                    <span className="inline-block mt-4 text-cyan-300 text-sm font-semibold">
+                      View full recap →
+                    </span>
+                  </Link>
+                );
+              })}
+          </div>
+        </section>
+
+        {/* All-time career leaderboard */}
+        <section className="mb-24">
+          <div className="mb-6">
+            <h2 className="text-2xl md:text-3xl text-white">
+              All-Time Leaderboard
+            </h2>
+            <p className="text-gray-400 mt-2 text-sm">
+              Click your name to view your player profile
+            </p>
+          </div>
+          <div className="relative rounded-3xl border border-cyan-400/60 overflow-hidden after:absolute after:inset-0 after:rounded-3xl after:bg-cyan-400/10 after:blur-[6px] after:-z-10">
+            <div className="overflow-x-auto">
+              <div className="px-4 md:px-6 pt-8 pb-4">
+                <div className="flex items-center border-b border-white/10 pb-4">
+                  <div className="w-12 md:w-16 text-gray-400 text-xs md:text-sm uppercase font-medium tracking-wider text-center">
+                    Rank
+                  </div>
+                  <div className="flex-1 text-gray-400 text-xs md:text-sm uppercase font-medium tracking-wider">
+                    Player
+                  </div>
+                  <div className="w-16 md:w-20 text-gray-400 text-xs md:text-sm uppercase font-medium tracking-wider text-center">
+                    Points
+                  </div>
+                  <div className="w-14 md:w-16 text-gray-400 text-xs md:text-sm uppercase font-medium tracking-wider text-center">
+                    Years
+                  </div>
+                  <div className="w-14 md:w-16 text-gray-400 text-xs md:text-sm uppercase font-medium tracking-wider text-center hidden sm:block">
+                    Medals
+                  </div>
                 </div>
-                <p className="text-sand-200/80 text-sm mt-2">{y.recap}</p>
-                <p className="text-sunset-400 text-sm mt-3">View recap →</p>
-              </Link>
-            ))}
-        </div>
-      </section>
-
-      <section>
-        <h2 className="text-sunset-200 text-2xl mb-4">Career Leaderboard</h2>
-        <div className="overflow-x-auto rounded-retro border border-sunset-700/30">
-          <table className="w-full text-left">
-            <thead className="bg-night-900/80">
-              <tr className="text-sunset-400/80 text-xs uppercase tracking-widest">
-                <th className="px-4 py-3 w-14">Rank</th>
-                <th className="px-4 py-3">Player</th>
-                <th className="px-4 py-3 text-right">Points</th>
-                <th className="px-4 py-3 text-right hidden sm:table-cell">Years</th>
-                <th className="px-4 py-3 text-right hidden sm:table-cell">Medals</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-sunset-700/20">
-              {board.map((entry, i) => (
-                <tr
-                  key={entry.player.slug}
-                  className="bg-night-900/40 hover:bg-night-900/80 transition"
-                >
-                  <td className="px-4 py-3 text-sunset-400 font-bold">
-                    #{i + 1}
-                  </td>
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/players/${entry.player.slug}`}
-                      className="hover:text-sunset-200 transition"
+              </div>
+              <div className="px-4 md:px-6 pb-8">
+                {board.map((entry, idx) => (
+                  <div
+                    key={entry.player.slug}
+                    className={`flex items-center py-3 md:py-4 relative border-b border-white/10 last:border-b-0 ${
+                      idx < 3 ? "bg-black/30" : ""
+                    } hover:bg-white/5 transition`}
+                  >
+                    <div
+                      className={`absolute left-0 top-0 bottom-0 w-[2px] rounded-l-3xl bg-cyan-400 ${
+                        idx < 3 ? "opacity-100" : "opacity-0"
+                      }`}
+                    />
+                    <div className="w-12 md:w-16 flex justify-center items-center gap-1">
+                      {idx === 0 && (
+                        <Trophy
+                          className="h-5 w-5 text-[#ffb347]"
+                          aria-label="1st"
+                        />
+                      )}
+                      {idx === 1 && (
+                        <Medal
+                          className="h-5 w-5 text-[#cfcfcf]"
+                          aria-label="2nd"
+                        />
+                      )}
+                      {idx === 2 && (
+                        <Medal
+                          className="h-5 w-5 text-[#d99847]"
+                          aria-label="3rd"
+                        />
+                      )}
+                      <span
+                        className={`font-medium ${
+                          idx === 0
+                            ? "text-[#ffb347]"
+                            : idx === 1
+                              ? "text-[#cfcfcf]"
+                              : idx === 2
+                                ? "text-[#d99847]"
+                                : "text-gray-400"
+                        }`}
+                      >
+                        {idx + 1}
+                      </span>
+                    </div>
+                    <div className="flex-1 truncate pr-2">
+                      <Link
+                        href={`/players/${entry.player.slug}`}
+                        className={`font-medium tracking-wide hover:text-cyan-300 transition-colors truncate text-gray-100 ${
+                          idx < 3 ? "font-semibold" : ""
+                        }`}
+                      >
+                        {entry.player.emoji} {entry.player.name}
+                      </Link>
+                    </div>
+                    <div
+                      className={`w-16 md:w-20 text-center font-semibold ${
+                        idx < 3 ? "text-cyan-300 text-lg" : "text-gray-100"
+                      }`}
                     >
-                      {entry.player.emoji}{" "}
-                      <span className="font-medium">{entry.player.name}</span>
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-right text-sunset-200 font-semibold">
-                    {entry.total}
-                  </td>
-                  <td className="px-4 py-3 text-right text-sand-200/80 hidden sm:table-cell">
-                    {entry.years}
-                  </td>
-                  <td className="px-4 py-3 text-right text-sand-200/80 hidden sm:table-cell">
-                    {entry.medals} 🏅
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+                      {entry.total}
+                    </div>
+                    <div className="w-14 md:w-16 text-center text-gray-300">
+                      {entry.years}
+                    </div>
+                    <div className="w-14 md:w-16 text-center text-gray-300 hidden sm:block">
+                      {entry.medals}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <Footer />
     </main>
   );
 }

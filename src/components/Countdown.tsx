@@ -13,8 +13,6 @@ export function Countdown({ target }: { target: string }) {
     return () => clearInterval(id);
   }, []);
 
-  // During SSR / first hydration frame, show a stable zeroed readout so the
-  // render stays deterministic and Next.js Cache Components is happy.
   const diff = mounted ? Math.max(0, new Date(target).getTime() - now) : 0;
   const days = Math.floor(diff / 86_400_000);
   const hours = Math.floor((diff % 86_400_000) / 3_600_000);
@@ -23,29 +21,28 @@ export function Countdown({ target }: { target: string }) {
 
   return (
     <div
-      className="flex items-center justify-center gap-3 md:gap-6 font-mono text-sunset-200"
+      className="flex items-center justify-center gap-3 md:gap-5"
       aria-label="Countdown to event"
     >
-      <Unit n={days} label="days" />
-      <Unit n={hours} label="hours" />
-      <Unit n={mins} label="min" />
-      <Unit n={secs} label="sec" />
+      <Pill n={days} label="days" />
+      <Pill n={hours} label="hours" />
+      <Pill n={mins} label="minutes" />
+      <Pill n={secs} label="seconds" />
     </div>
   );
 }
 
-function Unit({ n, label }: { n: number; label: string }) {
+function Pill({ n, label }: { n: number; label: string }) {
   return (
-    <div className="text-center">
-      <div
-        className="text-3xl md:text-5xl font-semibold tabular-nums"
-        style={{ fontFamily: "var(--font-display)" }}
-      >
-        {String(n).padStart(2, "0")}
+    <div className="flex flex-col items-center gap-1">
+      <div className="countdown-pill w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center">
+        <span className="text-2xl md:text-3xl font-semibold tabular-nums">
+          {String(n).padStart(2, "0")}
+        </span>
       </div>
-      <div className="text-[10px] uppercase tracking-widest text-sunset-400/70 mt-1">
+      <span className="text-[10px] md:text-xs uppercase tracking-widest text-sand-200/70">
         {label}
-      </div>
+      </span>
     </div>
   );
 }
