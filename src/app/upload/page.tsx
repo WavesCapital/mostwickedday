@@ -16,7 +16,7 @@ export default function UploadPage() {
       >
         ← Home
       </Link>
-      <h1 className="text-sunset-gradient text-5xl md:text-6xl mb-4">
+      <h1 className="text-sunset-200 font-extrabold text-5xl md:text-6xl mb-4 drop-shadow-[0_0_14px_rgba(255,180,120,0.35)]" style={{ fontFamily: "var(--font-display)" }}>
         SHARE YOUR MOMENTS
       </h1>
       <p className="text-sand-200 mb-10">

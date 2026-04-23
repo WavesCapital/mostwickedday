@@ -112,8 +112,11 @@ export default async function YearPage({
       <section className="relative w-full overflow-hidden flex items-center justify-center">
         <div className="absolute inset-0 bg-gradient-to-b from-sunset-900/20 via-transparent to-transparent" />
         <h1
-          className="relative text-[clamp(6rem,26vw,22rem)] leading-none text-sunset-gradient text-center py-12"
-          style={{ fontFamily: "var(--font-display)" }}
+          className="relative text-[clamp(6rem,26vw,22rem)] leading-none text-center py-12 font-extrabold text-sunset-500 drop-shadow-[0_0_32px_rgba(255,140,70,0.35)]"
+          style={{
+            fontFamily: "var(--font-display)",
+            textShadow: "0 0 64px rgba(255,120,60,0.15)",
+          }}
         >
           {year}
         </h1>
@@ -135,8 +138,7 @@ export default async function YearPage({
             </div>
             <div className="text-7xl mb-4">🏆</div>
             <h2
-              className="text-4xl md:text-5xl text-sunset-gradient"
-              style={{ fontFamily: "var(--font-display)" }}
+              className="text-4xl md:text-5xl font-extrabold text-sunset-200 drop-shadow-[0_0_14px_rgba(255,180,120,0.35)]"
             >
               {champ.name}
             </h2>

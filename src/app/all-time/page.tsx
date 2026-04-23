@@ -20,7 +20,7 @@ export default function AllTimePage() {
         >
           ← Home
         </Link>
-        <h1 className="text-sunset-gradient text-5xl md:text-7xl">ALL-TIME</h1>
+        <h1 className="text-sunset-500 font-extrabold text-5xl md:text-7xl drop-shadow-[0_0_24px_rgba(255,140,70,0.3)]" style={{ fontFamily: "var(--font-display)" }}>ALL-TIME</h1>
         <p className="text-sand-200 mt-4 max-w-2xl">
           Every Most Wicked Day in one place. Career points, medals, and years
           active across {board.length} competitors.

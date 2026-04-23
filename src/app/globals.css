@@ -50,13 +50,16 @@
   );
 }
 .text-sunset-gradient {
+  /* Gradient runs from bright highlight through warm midtone — keeps max
+     contrast against the dark body so big display type stays readable. */
   background: linear-gradient(
     135deg,
-    var(--color-sunset-200) 0%,
-    var(--color-sunset-500) 50%,
-    var(--color-sunset-700) 100%
+    oklch(0.92 0.09 55) 0%,
+    oklch(0.78 0.18 45) 40%,
+    oklch(0.62 0.22 28) 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  text-shadow: 0 0 40px rgba(255, 150, 80, 0.15);
 }

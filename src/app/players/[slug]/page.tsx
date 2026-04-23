@@ -61,7 +61,7 @@ export default async function PlayerPage({
         >
           {p.emoji ?? "🔥"}
         </div>
-        <h1 className="text-sunset-gradient text-5xl md:text-6xl mt-2">
+        <h1 className="text-sunset-200 font-extrabold text-5xl md:text-6xl mt-2 drop-shadow-[0_0_14px_rgba(255,180,120,0.35)]">
           {p.name}
         </h1>
         {p.funFact && (
