@@ -2,7 +2,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Upload } from "lucide-react";
-import { YEAR_RECAPS, PERFORMANCES } from "@/data/history";
 import {
   eventsByYear,
   yearRecap,
@@ -10,6 +9,8 @@ import {
   eventPodium,
   player,
   mediaForYear,
+  getAllYearRecaps,
+  getAllPerformances,
 } from "@/data/queries";
 import { legacyMediaUrl } from "@/lib/media";
 import { ChampionCard } from "@/components/ChampionCard";
@@ -22,8 +23,9 @@ import { Footer } from "@/components/Footer";
 
 type Params = { year: string };
 
-export function generateStaticParams(): Params[] {
-  return YEAR_RECAPS.map((y) => ({ year: String(y.year) }));
+export async function generateStaticParams(): Promise<Params[]> {
+  const recaps = await getAllYearRecaps();
+  return recaps.map((y) => ({ year: String(y.year) }));
 }
 
 export async function generateMetadata({
@@ -77,50 +79,60 @@ export default async function YearPage({
 }) {
   const { year: yearParam } = await params;
   const year = Number(yearParam);
-  const recap = yearRecap(year);
+  const [recap, allPerfs, recaps, yearEvents, board, media] = await Promise.all([
+    yearRecap(year),
+    getAllPerformances(),
+    getAllYearRecaps(),
+    eventsByYear(year),
+    yearScoreboard(year),
+    mediaForYear(year),
+  ]);
   if (!recap) return notFound();
 
-  const events = eventsByYear(year).filter((e) =>
-    PERFORMANCES.some((p) => p.eventId === e.id),
+  const events = yearEvents.filter((e) =>
+    allPerfs.some((p) => p.eventId === e.id),
   );
-  const board = yearScoreboard(year).filter((row) =>
+  const filteredBoard = board.filter((row) =>
     events.some((e) => row.byEvent[e.id] !== undefined),
   );
-  const champ = player(recap.championSlug);
-  const champBadges = champ
-    ? events
-        .filter((e) =>
-          eventPodium(e.id, 3).some((p) => p.player.slug === champ.slug),
-        )
-        .slice(0, 3)
-        .map((e) => `${e.name} Top 3`)
-    : [];
+  const champ = recap.championSlug ? await player(recap.championSlug) : undefined;
+  const champBadges: string[] = [];
+  if (champ) {
+    for (const e of events) {
+      const podium = await eventPodium(e.id, 3);
+      if (podium.some((p) => p.player.slug === champ.slug)) {
+        champBadges.push(`${e.name} Top 3`);
+      }
+      if (champBadges.length >= 3) break;
+    }
+  }
 
-  const media = mediaForYear(year);
   const photos = media.filter((m) => m.kind === "photo");
   const videos = media.filter((m) => m.kind === "video");
 
   const prevYear = year - 1;
   const nextYear = year + 1;
-  const hasPrev = YEAR_RECAPS.some((y) => y.year === prevYear);
-  const hasNext = YEAR_RECAPS.some((y) => y.year === nextYear);
+  const hasPrev = recaps.some((y) => y.year === prevYear);
+  const hasNext = recaps.some((y) => y.year === nextYear);
 
   const eventCols: LeaderboardEventCol[] = events.map((e) => ({
     id: e.id,
     short: EVENT_SHORT[e.name] ?? e.name.slice(0, 5),
   }));
 
-  const timelineItems = events.map((e, i) => {
-    const hue: "from" | "via" | "to" =
-      i < events.length / 3 ? "from" : i < (events.length * 2) / 3 ? "via" : "to";
-    const podium = eventPodium(e.id, 3).map((p) => ({
-      name: p.player.name,
-      slug: p.player.slug,
-      points: p.points,
-    }));
-    const time = EVENT_TIMES[`${year}|${e.name}`] ?? "";
-    return { hue, time, game: e.name, winners: podium };
-  });
+  const timelineItems = await Promise.all(
+    events.map(async (e, i) => {
+      const hue: "from" | "via" | "to" =
+        i < events.length / 3 ? "from" : i < (events.length * 2) / 3 ? "via" : "to";
+      const podium = (await eventPodium(e.id, 3)).map((p) => ({
+        name: p.player.name,
+        slug: p.player.slug,
+        points: p.points,
+      }));
+      const time = EVENT_TIMES[`${year}|${e.name}`] ?? "";
+      return { hue, time, game: e.name, winners: podium };
+    }),
+  );
 
   return (
     <main className="min-h-screen flex flex-col bg-[#0C1225] pt-16">
@@ -194,7 +206,7 @@ export default async function YearPage({
               </div>
             )}
             <YearLeaderboard
-              rows={board.map((r) => ({
+              rows={filteredBoard.map((r) => ({
                 slug: r.player.slug,
                 name: r.player.name,
                 total: r.total,

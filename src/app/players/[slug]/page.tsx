@@ -1,14 +1,20 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { PLAYERS, EVENTS, PERFORMANCES } from "@/data/history";
-import { careerStats, player } from "@/data/queries";
+import {
+  careerStats,
+  player,
+  getAllPlayers,
+  getAllEvents,
+  getAllPerformances,
+} from "@/data/queries";
 import { Footer } from "@/components/Footer";
 
 type Params = { slug: string };
 
-export function generateStaticParams(): Params[] {
-  return PLAYERS.map((p) => ({ slug: p.slug }));
+export async function generateStaticParams(): Promise<Params[]> {
+  const players = await getAllPlayers();
+  return players.map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({
@@ -17,7 +23,7 @@ export async function generateMetadata({
   params: Promise<Params>;
 }) {
   const { slug } = await params;
-  const p = player(slug);
+  const p = await player(slug);
   return {
     title: p ? p.name : "Player Not Found",
     description: p
@@ -32,14 +38,18 @@ export default async function PlayerPage({
   params: Promise<Params>;
 }) {
   const { slug } = await params;
-  const p = player(slug);
+  const [p, stats, allPerfs, allEvents] = await Promise.all([
+    player(slug),
+    careerStats(slug),
+    getAllPerformances(),
+    getAllEvents(),
+  ]);
   if (!p) return notFound();
 
-  const stats = careerStats(slug);
-  const perfs = PERFORMANCES.filter((x) => x.playerSlug === slug);
+  const perfs = allPerfs.filter((x) => x.playerSlug === slug);
   const byYear = new Map<number, typeof perfs>();
   for (const perf of perfs) {
-    const year = EVENTS.find((e) => e.id === perf.eventId)?.year;
+    const year = allEvents.find((e) => e.id === perf.eventId)?.year;
     if (!year) continue;
     byYear.set(year, [...(byYear.get(year) ?? []), perf]);
   }
@@ -120,7 +130,7 @@ export default async function PlayerPage({
                 </div>
                 <ul className="space-y-2">
                   {yearPerfs.map((perf) => {
-                    const event = EVENTS.find((e) => e.id === perf.eventId);
+                    const event = allEvents.find((e) => e.id === perf.eventId);
                     return (
                       <li
                         key={perf.eventId}

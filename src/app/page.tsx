@@ -1,5 +1,4 @@
-import { YEAR_RECAPS } from "@/data/history";
-import { allTimeLeaderboard, player } from "@/data/queries";
+import { allTimeLeaderboard, player, getAllYearRecaps } from "@/data/queries";
 import { EVENTS_2025 } from "@/data/events-2025";
 import { SunsetHero } from "@/components/SunsetHero";
 import { SunsetCountdown } from "@/components/SunsetCountdown";
@@ -9,12 +8,16 @@ import { RsvpForm } from "@/components/RsvpForm";
 import { Footer } from "@/components/Footer";
 import Link from "next/link";
 
-export default function HomePage() {
-  const top5 = allTimeLeaderboard().slice(0, 5);
-
-  const champ2023 = player("kyle-steinmeyer")?.lastName ?? "Kyle";
-  const champ2024 =
-    player("austin-granger")?.lastName?.toUpperCase() ?? "GRANGER";
+export default async function HomePage() {
+  const [top5All, recaps, champ2023P, champ2024P] = await Promise.all([
+    allTimeLeaderboard(),
+    getAllYearRecaps(),
+    player("kyle-steinmeyer"),
+    player("austin-granger"),
+  ]);
+  const top5 = top5All.slice(0, 5);
+  const champ2023 = champ2023P?.lastName?.toUpperCase() ?? "KYLE";
+  const champ2024 = champ2024P?.lastName?.toUpperCase() ?? "GRANGER";
 
   return (
     <main className="min-h-screen bg-[#0C1225]">
@@ -79,8 +82,8 @@ export default function HomePage() {
           <EditionCard
             year="2023"
             status="PAST EDITION"
-            champion={champ2023.toUpperCase()}
-            points="28"
+            champion={champ2023}
+            points={String(recaps.find((y) => y.year === 2023)?.championPoints ?? 28)}
             cta="View Recap →"
             outline="#34F5FF"
           />
@@ -88,7 +91,7 @@ export default function HomePage() {
             year="2024"
             status="PAST EDITION"
             champion={champ2024}
-            points="31"
+            points={String(recaps.find((y) => y.year === 2024)?.championPoints ?? 31)}
             cta="View Recap →"
             outline="#9A7DFF"
           />

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { YEAR_RECAPS } from "@/data/history";
-import { allTimeLeaderboard, player } from "@/data/queries";
+import { allTimeLeaderboard, player, getAllYearRecaps } from "@/data/queries";
 import { Footer } from "@/components/Footer";
 import { Trophy, Medal } from "lucide-react";
 
@@ -11,8 +10,20 @@ export const metadata = {
     "Every Most Wicked Day, every champion, every career point. Click a name to view the full player profile.",
 };
 
-export default function AllTimePage() {
-  const board = allTimeLeaderboard();
+export default async function AllTimePage() {
+  const [board, recaps] = await Promise.all([
+    allTimeLeaderboard(),
+    getAllYearRecaps(),
+  ]);
+  const recapsWithChamps = await Promise.all(
+    recaps
+      .slice()
+      .sort((a, b) => a.year - b.year)
+      .map(async (y) => ({
+        ...y,
+        champion: y.championSlug ? await player(y.championSlug) : undefined,
+      })),
+  );
 
   return (
     <main className="min-h-screen flex flex-col bg-[#0C1225] pt-16">
@@ -44,32 +55,29 @@ export default function AllTimePage() {
             Event History
           </h2>
           <div className="space-y-6">
-            {YEAR_RECAPS.slice()
-              .sort((a, b) => a.year - b.year)
-              .map((y) => {
-                const champ = player(y.championSlug);
-                return (
-                  <Link
-                    key={y.year}
-                    href={`/${y.year}`}
-                    className="block rounded-2xl bg-[#0E0F1D]/80 border border-cyan-400/30 p-6 hover:border-cyan-400/60 transition"
-                  >
-                    <div className="flex items-baseline gap-4 flex-wrap">
-                      <span
-                        className="text-4xl md:text-5xl text-cyan-300 font-extrabold"
-                        style={{ fontFamily: "var(--font-inter)" }}
-                      >
-                        {y.year}
-                      </span>
-                      <span className="text-white/60 text-sm uppercase tracking-widest">
-                        Champion: {champ?.name ?? "—"}
-                      </span>
-                    </div>
-                    <p className="mt-3 text-white/80 text-sm md:text-base">
-                      {y.recap}
-                    </p>
-                    <span className="inline-block mt-4 text-cyan-300 text-sm font-semibold">
-                      View full recap →
+            {recapsWithChamps.map((y) => {
+              return (
+                <Link
+                  key={y.year}
+                  href={`/${y.year}`}
+                  className="block rounded-2xl bg-[#0E0F1D]/80 border border-cyan-400/30 p-6 hover:border-cyan-400/60 transition"
+                >
+                  <div className="flex items-baseline gap-4 flex-wrap">
+                    <span
+                      className="text-4xl md:text-5xl text-cyan-300 font-extrabold"
+                      style={{ fontFamily: "var(--font-inter)" }}
+                    >
+                      {y.year}
+                    </span>
+                    <span className="text-white/60 text-sm uppercase tracking-widest">
+                      Champion: {y.champion?.name ?? "—"}
+                    </span>
+                  </div>
+                  <p className="mt-3 text-white/80 text-sm md:text-base">
+                    {y.recap}
+                  </p>
+                  <span className="inline-block mt-4 text-cyan-300 text-sm font-semibold">
+                    View full recap →
                     </span>
                   </Link>
                 );
